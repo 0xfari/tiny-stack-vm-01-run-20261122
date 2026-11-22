@@ -1,72 +1,33 @@
-import{readFileSync,readdirSync,mkdirSync,writeFileSync}from'node:fs';
-const I=process.env.MAKEFUN_INPUT_DIR??'/input',O=process.env.MAKEFUN_OUTPUT_DIR??'/output';
-const F=[
-(a,b)=>a+b,
-(a,b)=>a-b,
-Math.imul,
-(a,b)=>a/b,
-(a,b)=>a%b,
-(a,b)=>(a>>>0)/(b>>>0),
-(a,b)=>(a>>>0)%(b>>>0),
-0,
-(a,b)=>a&b,
-(a,b)=>a|b,
-(a,b)=>a^b,
-0,
-(a,b)=>a<<(b&31),
-(a,b)=>a>>(b&31),
-(a,b)=>a>>>(b&31),
-0,
-(a,b)=>a==b?1:0,
-(a,b)=>a<b?1:0,
-(a,b)=>(a>>>0)<(b>>>0)?1:0];
-function R(p,n){
- const D=new Int32Array(256),C=new Int32Array(64),M=new Int32Array(256),o=new Uint8Array(65536);
- let s=0,c=0,pc=0,t=0,l=0,q=0;
- const W=e=>[o.slice(0,l),e];
- try{for(;;){
-  if(t===1e6)throw 10;
-  if(pc<0||pc>=p.length)throw 9;
-  const a=p[pc],m=a==1?1:a==2?4:a>47&&a<52?2:0;
-  if(pc+m>=p.length)throw 9;
-  t++;const g=pc+1+m;pc=g;
-  if(a<8){
-   if(a==0)return W(0);
-   if(a<3){if(s>255)throw 3;D[s++]=a==1?p.readInt8(g-1):p.readInt32LE(g-4);}
-   else if(a==3){if(s<1)throw 2;s--;}
-   else if(a==4){if(s<1)throw 2;if(s>255)throw 3;D[s]=D[s-1];s++;}
-   else if(a==5){if(s<2)throw 2;const v=D[s-1];D[s-1]=D[s-2];D[s-2]=v;}
-   else if(a==6){if(s<2)throw 2;if(s>255)throw 3;D[s]=D[s-2];s++;}
-   else{if(s<3)throw 2;const v=D[s-3];D[s-3]=D[s-2];D[s-2]=D[s-1];D[s-1]=v;}
-  }else if(a<16)throw 5;
-  else if(a<35){
-   if(a==23){if(s<1)throw 2;D[s-1]=-D[s-1];}
-   else if(a==27){if(s<1)throw 2;D[s-1]=~D[s-1];}
-   else if(a==31)throw 5;
-   else{if(s<2)throw 2;const b=D[s-1],v=D[s-2];if(!b&&a>18&&a<23)throw 4;s-=2;D[s++]=F[a-16](v,b);}
-  }else if(a<48)throw 5;
-  else if(a<53){
-   const r=a<52?p.readInt16LE(g-2):0;
-   if(a==48)pc=g+r;
-   else if(a<51){if(s<1)throw 2;const v=D[--s];if((a==49)===(v==0))pc=g+r;}
-   else if(a==51){if(c===64)throw 7;C[c++]=g;pc=p[g-2]|p[g-1]<<8;}
-   else{if(c===0)throw 8;pc=C[--c];}
-  }else if(a<64)throw 5;
-  else if(a<66){
-   if(a==64){if(s<1)throw 2;const v=D[s-1];if(v<0||v>255)throw 6;D[s-1]=M[v];}
-   else{if(s<2)throw 2;const v=D[s-1];if(v<0||v>255)throw 6;s-=2;M[v]=D[s];}
-  }else if(a<80)throw 5;
-  else if(a<84){
-   if(a==80){if(s<1)throw 2;const b=Buffer.from(''+D[s-1]);if(l+b.length>65536)throw 11;s--;o.set(b,l);l+=b.length;}
-   else if(a==81){if(s<1)throw 2;if(l+1>65536)throw 11;o[l++]=D[--s]&255;}
-   else if(a==82){if(s>255)throw 3;D[s++]=q<n.length?n[q++]:-1;}
-   else{if(s<1)throw 2;return W(D[--s]&255);}
-  }else throw 5;
- }}catch(e){return W(e)}
+import F from"node:fs"
+let{MAKEFUN_INPUT_DIR:I="/input",MAKEFUN_OUTPUT_DIR:O="/output"}=process.env,W="01146:;?0000000099999995999599909990000000000000044000000000000058000000000000004414",Y="+,-,,/,%,/,%,,&,|,^,,<<,>>,>>>,,==,<,<".split(","),R=F.readFileSync,S=F.writeFileSync,a,y
+for(let d of F.readdirSync(I)){
+let P=R(I+"/"+d+"/program.bin"),Q=R(I+"/"+d+"/input.bin"),s=[],c=[],m=[],o="",j=0,p=0,e=-1,D=O+"/"+d
+for(let n=1e6;n--&&e<0;){
+let b=P[p],L=b==1?1:b==2?4:b>47&&b<52?2:0,g=(P[p+1]|P[p+2]<<8)<<16>>16
+if(p>>>0>=P.length||p+L>=P.length){e=9;break}
+let q=W.charCodeAt(b)-48,u=q>>2,v=q&3
+if(s.length<u){e=2;break}
+if(s.length-u+v>256){e=3;break}
+let x=p+1+L
+if(b==0)e=0
+else if(b<3)s.push(P.readIntLE(p+1,b==1?1:4))
+else if(b>2&&b<8){b==3?s.pop():b%2?s.push(s.splice((1-b)/2,1)[0]):s.push(s.at(1-b/2))}
+else if(q==9){y=s.pop(),a=s.pop()
+if(b>18&&b<23&&y==0)e=4
+else{if(b>20&&b<23||b==34){a>>>=0;y>>>=0}s.push(b==18?Math.imul(a,y):eval(`a${Y[b-16]}y`)|0)}}
+else if(b==23||b==27)s.push(b==23?-s.pop()|0:~s.pop())
+else if(b>47&&b<51){if(b==48||(s.pop()==0)==(b==49)){p=x+g;continue}}
+else if(b==51){if(c[63])e=7;else{c.push(x);p=g&65535;continue}}
+else if(b==52){if(!c.length)e=8;else{p=c.pop();continue}}
+else if(b>63&&b<66){a=s.pop();if(a>>>0>255)e=6;else b==64?s.push(m[a]||0):m[a]=s.pop()}
+else if(b>79&&b<82){let v=s.pop(),t=b==80?v+"":String.fromCharCode(v&255);if(o.length+t.length>65536)e=11;else o+=t}
+else if(b==82)s.push(Q[j++]??-1)
+else if(b==83)e=s.pop()&255
+else e=5
+p=x
 }
-for(const d of readdirSync(I).sort()){
- const[r,e]=R(readFileSync(I+'/'+d+'/program.bin'),readFileSync(I+'/'+d+'/input.bin'));
- mkdirSync(O+'/'+d,{recursive:true});
- writeFileSync(O+'/'+d+'/stdout.bin',r);
- writeFileSync(O+'/'+d+'/exit.txt',e+'\n');
+if(e<0)e=10
+F.mkdirSync(D,{recursive:true})
+S(D+"/stdout.bin",o,"latin1")
+S(D+"/exit.txt",e+"")
 }
